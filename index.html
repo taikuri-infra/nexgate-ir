@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGate — دروازه امن دسترسی از راه دور سازمانی</title>
+    <meta name="description" content="NexGate پلتفرم جامع دسترسی از راه دور سازمانی با موتور پروتکل بومی">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
+                        space: ['Orbitron', 'monospace'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        *, *::before, *::after { font-family: 'Vazirmatn', system-ui, sans-serif; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: #010108; color: #c8d6e5; overflow-x: hidden; }
+
+        /* ===== STAR FIELD CANVAS ===== */
+        #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* ===== NEBULA BACKGROUNDS ===== */
+        .nebula-1 {
+            background:
+                radial-gradient(ellipse 120% 60% at 20% 10%, rgba(88, 28, 180, 0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 50% at 80% 30%, rgba(15, 82, 186, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 90% 40% at 50% 90%, rgba(168, 50, 200, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 10% 60%, rgba(0, 195, 255, 0.06) 0%, transparent 40%);
+        }
+        .nebula-2 {
+            background:
+                radial-gradient(ellipse 70% 50% at 70% 20%, rgba(120, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 60% at 30% 80%, rgba(0, 150, 255, 0.08) 0%, transparent 50%);
+        }
+
+        /* ===== HOLOGRAPHIC TEXT ===== */
+        .holo-text {
+            background: linear-gradient(135deg, #00f5ff 0%, #b14aed 25%, #ff6ec7 50%, #00f5ff 75%, #b14aed 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: holo-shift 6s ease-in-out infinite;
+        }
+        @keyframes holo-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .neon-text {
+            background: linear-gradient(90deg, #00f5ff, #7b61ff, #00f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.3));
+        }
+
+        .neon-purple {
+            background: linear-gradient(90deg, #b14aed, #7b61ff, #b14aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== ORBITAL RING ===== */
+        .orbital-container { position: relative; display: inline-block; }
+        .orbital-ring {
+            position: absolute;
+            border: 1px solid rgba(0, 245, 255, 0.15);
+            border-radius: 50%;
+            animation: orbit-spin 12s linear infinite;
+        }
+        .orbital-ring::after {
+            content: '';
+            position: absolute;
+            width: 6px; height: 6px;
+            background: #00f5ff;
+            border-radius: 50%;
+            top: -3px; left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 12px #00f5ff, 0 0 30px #00f5ff;
+        }
+        .orbital-ring-2 {
+            animation: orbit-spin 8s linear infinite reverse;
+            border-color: rgba(177, 74, 237, 0.12);
+        }
+        .orbital-ring-2::after { background: #b14aed; box-shadow: 0 0 12px #b14aed, 0 0 30px #b14aed; }
+        @keyframes orbit-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ===== HOLOGRAPHIC CARDS ===== */
+        .holo-card {
+            background: linear-gradient(135deg, rgba(10, 5, 30, 0.85), rgba(5, 10, 35, 0.9));
+            border: 1px solid rgba(0, 245, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .holo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.03), rgba(177, 74, 237, 0.03), transparent);
+            transition: left 0.8s;
+        }
+        .holo-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.4), rgba(177, 74, 237, 0.4), transparent);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .holo-card:hover {
+            border-color: rgba(0, 245, 255, 0.2);
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 245, 255, 0.05), 0 0 80px rgba(177, 74, 237, 0.03);
+        }
+        .holo-card:hover::before { left: 100%; }
+        .holo-card:hover::after { opacity: 1; }
+
+        .proto-card {
+            background: linear-gradient(135deg, rgba(8, 4, 25, 0.9), rgba(5, 8, 30, 0.95));
+            border: 1px solid rgba(0, 245, 255, 0.06);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .proto-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.08), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .proto-card:hover {
+            border-color: rgba(0, 245, 255, 0.25);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 245, 255, 0.06);
+        }
+        .proto-card:hover::after { opacity: 1; }
+
+        .mini-card {
+            background: rgba(0, 245, 255, 0.02);
+            border: 1px solid rgba(0, 245, 255, 0.05);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .mini-card:hover {
+            background: rgba(0, 245, 255, 0.04);
+            border-color: rgba(0, 245, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== NEON BORDER ===== */
+        .neon-border {
+            position: relative;
+            background: rgba(5, 3, 20, 0.95);
+            border-radius: 1.5rem;
+        }
+        .neon-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 1.5rem;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.5), rgba(177, 74, 237, 0.4), rgba(255, 110, 199, 0.3), rgba(0, 245, 255, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: border-rotate 4s linear infinite;
+            background-size: 300% 300%;
+        }
+        @keyframes border-rotate {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        /* ===== SCANLINE EFFECT ===== */
+        .scanline::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.3), transparent);
+            animation: scanline-move 3s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline-move {
+            0% { top: -2px; }
+            100% { top: 100%; }
+        }
+
+        /* ===== SHOOTING STAR ===== */
+        .shooting-star {
+            position: fixed;
+            width: 120px; height: 1px;
+            background: linear-gradient(90deg, rgba(0, 245, 255, 0.6), transparent);
+            animation: shoot 3s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(100vw) translateY(-100px) rotate(-35deg); opacity: 0; }
+            5% { opacity: 1; }
+            20% { opacity: 0; }
+            100% { transform: translateX(-100vw) translateY(100vh) rotate(-35deg); opacity: 0; }
+        }
+
+        /* ===== HEX GRID ===== */
+        .hex-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='69' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 17.32v34.64L30 69 0 51.96V17.32z' fill='none' stroke='%2300f5ff' stroke-opacity='0.03' stroke-width='0.5'/%3E%3C/svg%3E");
+            background-size: 60px 69px;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .stagger .fade-up:nth-child(1) { transition-delay: 0.05s; }
+        .stagger .fade-up:nth-child(2) { transition-delay: 0.1s; }
+        .stagger .fade-up:nth-child(3) { transition-delay: 0.15s; }
+        .stagger .fade-up:nth-child(4) { transition-delay: 0.2s; }
+        .stagger .fade-up:nth-child(5) { transition-delay: 0.25s; }
+        .stagger .fade-up:nth-child(6) { transition-delay: 0.3s; }
+        .stagger .fade-up:nth-child(7) { transition-delay: 0.35s; }
+        .stagger .fade-up:nth-child(8) { transition-delay: 0.4s; }
+        .stagger .fade-up:nth-child(9) { transition-delay: 0.45s; }
+
+        /* Float animation */
+        .float { animation: gentle-float 6s ease-in-out infinite; }
+        @keyframes gentle-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Pulse glow */
+        .pulse-glow {
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 245, 255, 0.2), 0 0 40px rgba(0, 245, 255, 0.1); }
+            50% { box-shadow: 0 0 30px rgba(0, 245, 255, 0.4), 0 0 60px rgba(0, 245, 255, 0.2), 0 0 100px rgba(0, 245, 255, 0.1); }
+        }
+
+        /* Step connector */
+        .step-line {
+            background: linear-gradient(to left, rgba(0, 245, 255, 0.3), rgba(177, 74, 237, 0.3), rgba(255, 110, 199, 0.3));
+            height: 2px;
+        }
+
+        /* Stats */
+        .stat-num {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.25rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #00f5ff, #7b61ff, #ff6ec7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.2));
+        }
+        @media (max-width: 768px) { .stat-num { font-size: 2.5rem; } }
+
+        /* CTA */
+        .cta-neon {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(177, 74, 237, 0.15));
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .cta-neon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.25), rgba(177, 74, 237, 0.25));
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .cta-neon:hover {
+            border-color: rgba(0, 245, 255, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.2), 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .cta-neon:hover::before { opacity: 1; }
+        .cta-neon > * { position: relative; z-index: 1; }
+
+        .cta-ghost {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s;
+        }
+        .cta-ghost:hover {
+            border-color: rgba(177, 74, 237, 0.4);
+            background: rgba(177, 74, 237, 0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(177, 74, 237, 0.1);
+        }
+
+        /* Nav */
+        .nav-space {
+            background: rgba(1, 1, 8, 0.8);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.04);
+            transition: all 0.3s;
+        }
+        .nav-space.scrolled {
+            border-bottom-color: rgba(0, 245, 255, 0.12);
+            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 245, 255, 0.05);
+        }
+
+        /* Form */
+        .form-input {
+            background: rgba(0, 245, 255, 0.02);
+            border: 1px solid rgba(0, 245, 255, 0.08);
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            border-color: rgba(0, 245, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.06), inset 0 0 20px rgba(0, 245, 255, 0.02);
+            background: rgba(0, 245, 255, 0.04);
+            outline: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 245, 255, 0.15); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 245, 255, 0.3); }
+
+        /* Tag */
+        .tag {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Section divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.15), rgba(177, 74, 237, 0.15), transparent);
+        }
+
+        /* Data rain */
+        .data-column {
+            position: absolute;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            color: rgba(0, 245, 255, 0.08);
+            writing-mode: vertical-rl;
+            animation: data-fall 20s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes data-fall {
+            0% { transform: translateY(-100%); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Star Field Canvas -->
+<canvas id="starfield"></canvas>
+
+<!-- Shooting Stars -->
+<div class="shooting-star" style="top: 10%; animation-delay: 0s;"></div>
+<div class="shooting-star" style="top: 30%; animation-delay: 4s; width: 80px;"></div>
+<div class="shooting-star" style="top: 60%; animation-delay: 8s; width: 100px;"></div>
+
+<!-- Navigation -->
+<nav id="navbar" class="nav-space fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 sm:h-18">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-shadow">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                </div>
+                <span class="text-xl font-extrabold neon-text tracking-tight font-space">NEXGATE</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#protocols" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm font-medium">پروتکل‌ها</a>
+                <a href="#features" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm font-medium">قابلیت‌ها</a>
+                <a href="#how-it-works" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm font-medium">نحوه کار</a>
+                <a href="#stats" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm font-medium">آمار</a>
+                <a href="#contact" class="cta-neon px-5 py-2 rounded-lg text-sm font-semibold text-cyan-300">
+                    <span>تماس با ما</span>
+                </a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-400 hover:text-cyan-400 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden pb-4">
+            <div class="flex flex-col gap-1">
+                <a href="#protocols" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm py-2.5 px-3 rounded-lg hover:bg-cyan-500/5">پروتکل‌ها</a>
+                <a href="#features" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm py-2.5 px-3 rounded-lg hover:bg-cyan-500/5">قابلیت‌ها</a>
+                <a href="#how-it-works" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm py-2.5 px-3 rounded-lg hover:bg-cyan-500/5">نحوه کار</a>
+                <a href="#stats" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm py-2.5 px-3 rounded-lg hover:bg-cyan-500/5">آمار</a>
+                <a href="#contact" class="text-gray-500 hover:text-cyan-400 transition-colors text-sm py-2.5 px-3 rounded-lg hover:bg-cyan-500/5">تماس با ما</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="nebula-1 relative min-h-screen flex items-center pt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center relative z-10">
+
+        <div class="fade-up mb-8">
+            <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-cyan-500/10 bg-cyan-500/[0.03] text-sm text-cyan-400/80">
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400"></span>
+                </span>
+                <span class="font-space text-xs tracking-widest uppercase">Enterprise Access Security Platform</span>
+            </div>
+        </div>
+
+        <!-- Logo with orbital rings -->
+        <div class="fade-up mb-6">
+            <div class="orbital-container inline-block">
+                <div class="orbital-ring" style="width: 200px; height: 200px; top: 50%; left: 50%; margin-top: -100px; margin-left: -100px;"></div>
+                <div class="orbital-ring orbital-ring-2" style="width: 260px; height: 260px; top: 50%; left: 50%; margin-top: -130px; margin-left: -130px;"></div>
+                <h1 class="text-6xl sm:text-7xl md:text-9xl font-black leading-none tracking-tighter py-12 px-8">
+                    <span class="holo-text font-space">NEXGATE</span>
+                </h1>
+            </div>
+        </div>
+
+        <h2 class="fade-up text-2xl sm:text-3xl md:text-4xl font-bold text-white/90 mb-6 leading-tight">
+            دروازه امن دسترسی از راه دور
+        </h2>
+        <p class="fade-up text-base sm:text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">
+            دسترسی یکپارچه و رمزنگاری‌شده به سرورها، دسکتاپ‌ها و پایگاه‌داده‌ها از طریق مرورگر
+            <br class="hidden sm:block">
+            با موتور پروتکل بومی، ۱۲ پلاگین امنیتی و بیش از ۸ پروتکل
+        </p>
+
+        <!-- Protocol badges -->
+        <div class="fade-up flex flex-wrap justify-center gap-2.5 mb-14">
+            <span class="px-4 py-1.5 rounded-lg border border-cyan-500/15 bg-cyan-500/[0.04] text-xs font-bold text-cyan-400 font-space tracking-wider">RDP</span>
+            <span class="px-4 py-1.5 rounded-lg border border-blue-500/15 bg-blue-500/[0.04] text-xs font-bold text-blue-400 font-space tracking-wider">VNC</span>
+            <span class="px-4 py-1.5 rounded-lg border border-green-500/15 bg-green-500/[0.04] text-xs font-bold text-green-400 font-space tracking-wider">SSH</span>
+            <span class="px-4 py-1.5 rounded-lg border border-purple-500/15 bg-purple-500/[0.04] text-xs font-bold text-purple-400 font-space tracking-wider">TELNET</span>
+            <span class="px-4 py-1.5 rounded-lg border border-indigo-500/15 bg-indigo-500/[0.04] text-xs font-bold text-indigo-400 font-space tracking-wider">POSTGRESQL</span>
+            <span class="px-4 py-1.5 rounded-lg border border-orange-500/15 bg-orange-500/[0.04] text-xs font-bold text-orange-400 font-space tracking-wider">MYSQL</span>
+            <span class="px-4 py-1.5 rounded-lg border border-red-500/15 bg-red-500/[0.04] text-xs font-bold text-red-400 font-space tracking-wider">MSSQL</span>
+            <span class="px-4 py-1.5 rounded-lg border border-sky-500/15 bg-sky-500/[0.04] text-xs font-bold text-sky-400 font-space tracking-wider">K8S</span>
+        </div>
+
+        <div class="fade-up flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#contact" class="cta-neon px-10 py-4 rounded-2xl text-base font-bold text-white shadow-2xl">
+                <span>درخواست دمو رایگان</span>
+            </a>
+            <a href="#features" class="cta-ghost px-10 py-4 rounded-2xl text-base font-bold text-gray-300">
+                مشاهده قابلیت‌ها
+            </a>
+        </div>
+
+        <!-- Terminal / HUD -->
+        <div class="fade-up mt-20 relative max-w-4xl mx-auto">
+            <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10 scale-95"></div>
+            <div class="neon-border rounded-3xl overflow-hidden scanline">
+                <div class="bg-[#030312] p-6 sm:p-8">
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="w-3 h-3 rounded-full bg-[#ff5f57]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#febc2e]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#28c840]"></div>
+                        <span class="text-cyan-800 text-xs mr-4 font-space" dir="ltr">nexgate@core ~ %</span>
+                    </div>
+                    <div class="font-mono text-xs sm:text-sm text-left leading-relaxed" dir="ltr">
+                        <div class="text-gray-600">$ nexgate status --verbose</div>
+                        <div class="mt-3 text-cyan-500">&#10003; Protocol Engine (NPE) .................. <span class="text-white font-medium">running</span></div>
+                        <div class="text-cyan-500">&#10003; SSH Gateway (port 2222) ................. <span class="text-white font-medium">running</span></div>
+                        <div class="text-cyan-500">&#10003; HTTPS Server (port 8080) ................ <span class="text-white font-medium">running</span></div>
+                        <div class="text-cyan-500">&#10003; Browser Isolation Engine ................. <span class="text-white font-medium">running</span></div>
+                        <div class="text-cyan-500">&#10003; ClamAV Antivirus + CDR .................. <span class="text-white font-medium">active</span></div>
+                        <div class="text-cyan-500">&#10003; PostgreSQL 16 + Redis 7 ................. <span class="text-white font-medium">connected</span></div>
+                        <div class="mt-3 text-gray-800">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+                        <div class="mt-1"><span class="text-purple-400">protocols</span>  <span class="text-gray-700">:</span> <span class="text-white">RDP  VNC  SSH  Telnet  PostgreSQL  MySQL  MSSQL  K8s</span></div>
+                        <div><span class="text-purple-400">plugins</span>    <span class="text-gray-700">:</span> <span class="text-white">12 loaded</span> <span class="text-gray-700">|</span> <span class="text-white">10 lifecycle hooks</span></div>
+                        <div><span class="text-purple-400">security</span>   <span class="text-gray-700">:</span> <span class="text-cyan-400">MFA  CertPin  ACL  GeoBlock  CDR  SIEM</span></div>
+                        <div><span class="text-purple-400">sessions</span>   <span class="text-gray-700">:</span> <span class="text-white">47 active</span> <span class="text-gray-700">|</span> <span class="text-purple-400">uptime</span> <span class="text-gray-700">:</span> <span class="text-white">99.97%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+        <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</section>
+
+<!-- ============ PROTOCOLS ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section id="protocols" class="nebula-2 relative py-28 hex-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16">
+            <div class="fade-up inline-block tag bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 mb-4">PROTOCOLS</div>
+            <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-5">۸ پروتکل، یک دروازه</h2>
+            <p class="fade-up text-gray-500 text-lg max-w-xl mx-auto">دسترسی به تمام زیرساخت‌ها از یک نقطه واحد — بدون نرم‌افزار اضافی</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger">
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/[0.07] border border-cyan-500/10 flex items-center justify-center mb-4 group-hover:border-cyan-500/25 group-hover:shadow-lg group-hover:shadow-cyan-500/10 transition-all">
+                    <svg class="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">RDP</div>
+                <div class="text-gray-600 text-xs mt-1">Remote Desktop</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-500/[0.07] border border-blue-500/10 flex items-center justify-center mb-4 group-hover:border-blue-500/25 group-hover:shadow-lg group-hover:shadow-blue-500/10 transition-all">
+                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">VNC</div>
+                <div class="text-gray-600 text-xs mt-1">Virtual Network</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-green-500/[0.07] border border-green-500/10 flex items-center justify-center mb-4 group-hover:border-green-500/25 group-hover:shadow-lg group-hover:shadow-green-500/10 transition-all">
+                    <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">SSH</div>
+                <div class="text-gray-600 text-xs mt-1">Secure Shell</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-500/[0.07] border border-purple-500/10 flex items-center justify-center mb-4 group-hover:border-purple-500/25 group-hover:shadow-lg group-hover:shadow-purple-500/10 transition-all">
+                    <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">TELNET</div>
+                <div class="text-gray-600 text-xs mt-1">Terminal Network</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-500/[0.07] border border-indigo-500/10 flex items-center justify-center mb-4 group-hover:border-indigo-500/25 group-hover:shadow-lg group-hover:shadow-indigo-500/10 transition-all">
+                    <svg class="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space text-sm">POSTGRESQL</div>
+                <div class="text-gray-600 text-xs mt-1">via SSH Gateway</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-orange-500/[0.07] border border-orange-500/10 flex items-center justify-center mb-4 group-hover:border-orange-500/25 group-hover:shadow-lg group-hover:shadow-orange-500/10 transition-all">
+                    <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">MYSQL</div>
+                <div class="text-gray-600 text-xs mt-1">via SSH Gateway</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-red-500/[0.07] border border-red-500/10 flex items-center justify-center mb-4 group-hover:border-red-500/25 group-hover:shadow-lg group-hover:shadow-red-500/10 transition-all">
+                    <svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">MSSQL</div>
+                <div class="text-gray-600 text-xs mt-1">SQL Server</div>
+            </div>
+            <div class="fade-up proto-card rounded-2xl p-6 text-center group">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-sky-500/[0.07] border border-sky-500/10 flex items-center justify-center mb-4 group-hover:border-sky-500/25 group-hover:shadow-lg group-hover:shadow-sky-500/10 transition-all">
+                    <svg class="w-7 h-7 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                </div>
+                <div class="text-lg font-bold text-white font-space">K8S</div>
+                <div class="text-gray-600 text-xs mt-1">kubectl Access</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section id="features" class="relative py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16">
+            <div class="fade-up inline-block tag bg-purple-500/10 text-purple-400 border border-purple-500/15 mb-4">FEATURES</div>
+            <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-5">امنیت بدون مصالحه</h2>
+            <p class="fade-up text-gray-500 text-lg max-w-xl mx-auto">لایه‌های متعدد امنیتی برای محافظت از زیرساخت سازمانی شما</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 stagger">
+            <!-- 1 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/[0.08] border border-cyan-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">امنیت چندلایه</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">احراز هویت چندعاملی TOTP، Certificate Pinning مطابق OWASP، مسدودسازی جغرافیایی، Rate Limiting و ACL</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-cyan-500/8 text-cyan-400 border border-cyan-500/10">MFA/TOTP</span>
+                    <span class="tag bg-cyan-500/8 text-cyan-400 border border-cyan-500/10">CertPin</span>
+                    <span class="tag bg-cyan-500/8 text-cyan-400 border border-cyan-500/10">GeoBlock</span>
+                    <span class="tag bg-cyan-500/8 text-cyan-400 border border-cyan-500/10">ACL</span>
+                </div>
+            </div>
+            <!-- 2 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/[0.08] border border-purple-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">احراز هویت یکپارچه (SSO)</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">پشتیبانی کامل از SAML 2.0، OAuth2، OpenID Connect، LDAP با TLS، Keycloak و کلید عمومی SSH</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-purple-500/8 text-purple-400 border border-purple-500/10">SAML 2.0</span>
+                    <span class="tag bg-purple-500/8 text-purple-400 border border-purple-500/10">OAuth2</span>
+                    <span class="tag bg-purple-500/8 text-purple-400 border border-purple-500/10">OIDC</span>
+                    <span class="tag bg-purple-500/8 text-purple-400 border border-purple-500/10">LDAP</span>
+                </div>
+            </div>
+            <!-- 3 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-pink-500/[0.08] border border-pink-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">ضبط و بازپخش جلسات</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">ضبط تمام جلسات با فشرده‌سازی zstd، جستجوی هوشمند با OCR، واترمارک و ذخیره‌سازی ابری</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-pink-500/8 text-pink-400 border border-pink-500/10">OCR Search</span>
+                    <span class="tag bg-pink-500/8 text-pink-400 border border-pink-500/10">S3/MinIO</span>
+                    <span class="tag bg-pink-500/8 text-pink-400 border border-pink-500/10">Azure</span>
+                    <span class="tag bg-pink-500/8 text-pink-400 border border-pink-500/10">Watermark</span>
+                </div>
+            </div>
+            <!-- 4 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">مرورگر ایزوله (RBI)</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">اجرای مرورگر در کانتینرهای ایزوله با اسکن آنتی‌ویروس ClamAV، خنثی‌سازی فایل CDR و فیلتر وب Squid</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-emerald-500/8 text-emerald-400 border border-emerald-500/10">Isolation</span>
+                    <span class="tag bg-emerald-500/8 text-emerald-400 border border-emerald-500/10">ClamAV</span>
+                    <span class="tag bg-emerald-500/8 text-emerald-400 border border-emerald-500/10">CDR</span>
+                    <span class="tag bg-emerald-500/8 text-emerald-400 border border-emerald-500/10">Squid</span>
+                </div>
+            </div>
+            <!-- 5 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/[0.08] border border-orange-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">SSH Gateway شفاف (PAM)</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">دسترسی SSH با منوی تعاملی TUI، فیلتر دستورات، ضبط جلسه، احراز هویت PublicKey + OTP و دسترسی DB</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-orange-500/8 text-orange-400 border border-orange-500/10">TUI Menu</span>
+                    <span class="tag bg-orange-500/8 text-orange-400 border border-orange-500/10">Cmd Filter</span>
+                    <span class="tag bg-orange-500/8 text-orange-400 border border-orange-500/10">PublicKey</span>
+                    <span class="tag bg-orange-500/8 text-orange-400 border border-orange-500/10">Recording</span>
+                </div>
+            </div>
+            <!-- 6 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-yellow-500/[0.08] border border-yellow-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">انتقال فایل امن</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">آپلود و دانلود با اسکن بدافزار، سیاست انتقال فایل، محدودیت پسوند/حجم، رمزنگاری و خنثی‌سازی CDR</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-yellow-500/8 text-yellow-400 border border-yellow-500/10">Malware Scan</span>
+                    <span class="tag bg-yellow-500/8 text-yellow-400 border border-yellow-500/10">File Policy</span>
+                    <span class="tag bg-yellow-500/8 text-yellow-400 border border-yellow-500/10">Encrypted</span>
+                    <span class="tag bg-yellow-500/8 text-yellow-400 border border-yellow-500/10">CDR</span>
+                </div>
+            </div>
+            <!-- 7 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-red-500/[0.08] border border-red-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">JIT Access و دسترسی اضطراری</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">دسترسی Just-In-Time با تایید مدیر، Break Glass برای شرایط اضطراری و Password Vault رمزنگاری‌شده</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-red-500/8 text-red-400 border border-red-500/10">JIT Access</span>
+                    <span class="tag bg-red-500/8 text-red-400 border border-red-500/10">Break Glass</span>
+                    <span class="tag bg-red-500/8 text-red-400 border border-red-500/10">Vault</span>
+                </div>
+            </div>
+            <!-- 8 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-teal-500/[0.08] border border-teal-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">همکاری و اشتراک جلسه</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">اشتراک جلسات با همکاران، مانیتورینگ زنده، واترمارک امنیتی و پخش جریان وبکم با WebSocket</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-teal-500/8 text-teal-400 border border-teal-500/10">Session Share</span>
+                    <span class="tag bg-teal-500/8 text-teal-400 border border-teal-500/10">Live Monitor</span>
+                    <span class="tag bg-teal-500/8 text-teal-400 border border-teal-500/10">Webcam</span>
+                </div>
+            </div>
+            <!-- 9 -->
+            <div class="fade-up holo-card rounded-2xl p-7">
+                <div class="w-12 h-12 rounded-xl bg-violet-500/[0.08] border border-violet-500/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">SIEM، حسابرسی و انطباق</h3>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">لاگ حسابرسی جامع، ادغام SIEM، گزارش انطباق، خروجی Excel/PDF، متریک Prometheus و ردیابی مصرف</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="tag bg-violet-500/8 text-violet-400 border border-violet-500/10">SIEM</span>
+                    <span class="tag bg-violet-500/8 text-violet-400 border border-violet-500/10">Prometheus</span>
+                    <span class="tag bg-violet-500/8 text-violet-400 border border-violet-500/10">Audit Log</span>
+                    <span class="tag bg-violet-500/8 text-violet-400 border border-violet-500/10">PDF/Excel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ MORE CAPABILITIES ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section class="nebula-2 relative py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16">
+            <div class="fade-up inline-block tag bg-pink-500/10 text-pink-400 border border-pink-500/15 mb-4">CAPABILITIES</div>
+            <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-5">و خیلی بیشتر...</h2>
+            <p class="fade-up text-gray-500 text-lg max-w-xl mx-auto">همه چیز در یک پلتفرم جامع</p>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 stagger">
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-cyan-400 font-bold text-sm font-space text-xs">WEB APPS</div><div class="text-gray-600 text-xs mt-1">پراکسی اپلیکیشن‌های وب</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-blue-400 font-bold text-sm font-space text-xs">HEADER INJECT</div><div class="text-gray-600 text-xs mt-1">تزریق هدر پراکسی</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-purple-400 font-bold text-sm font-space text-xs">BACKUP</div><div class="text-gray-600 text-xs mt-1">پشتیبان‌گیری و بازیابی</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-green-400 font-bold text-sm font-space text-xs">GEO-BLOCK</div><div class="text-gray-600 text-xs mt-1">مسدودسازی جغرافیایی</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-orange-400 font-bold text-sm font-space text-xs">BROADCAST</div><div class="text-gray-600 text-xs mt-1">پیام‌رسانی زمان‌بندی‌شده</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-pink-400 font-bold text-sm font-space text-xs">SSH FILTER</div><div class="text-gray-600 text-xs mt-1">فیلتر دستورات SSH</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-teal-400 font-bold text-sm font-space text-xs">WEB FILTER</div><div class="text-gray-600 text-xs mt-1">فیلتر وب با Squid</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-indigo-400 font-bold text-sm font-space text-xs">PLUGINS</div><div class="text-gray-600 text-xs mt-1">۱۲ پلاگین / ۱۰ هوک</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-yellow-400 font-bold text-sm font-space text-xs">BANDWIDTH</div><div class="text-gray-600 text-xs mt-1">محدودیت پهنای باند</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-red-400 font-bold text-sm font-space text-xs">SECCOMP</div><div class="text-gray-600 text-xs mt-1">Container Security</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-emerald-400 font-bold text-sm font-space text-xs">DISCOVERY</div><div class="text-gray-600 text-xs mt-1">کشف خودکار زیرساخت</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-violet-400 font-bold text-sm font-space text-xs">I18N</div><div class="text-gray-600 text-xs mt-1">فارسی / English</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-sky-400 font-bold text-sm font-space text-xs">ALERTS</div><div class="text-gray-600 text-xs mt-1">اطلاع‌رسانی ایمیلی</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-lime-400 font-bold text-sm font-space text-xs">ANALYTICS</div><div class="text-gray-600 text-xs mt-1">آنالیتیکس مصرف</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-amber-400 font-bold text-sm font-space text-xs">NET ISOLATE</div><div class="text-gray-600 text-xs mt-1">۴ شبکه Docker ایزوله</div></div>
+            <div class="fade-up mini-card rounded-xl p-4 text-center"><div class="text-rose-400 font-bold text-sm font-space text-xs">LICENSE</div><div class="text-gray-600 text-xs mt-1">مدیریت اشتراک و لایسنس</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section id="how-it-works" class="relative py-28 hex-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16">
+            <div class="fade-up inline-block tag bg-green-500/10 text-green-400 border border-green-500/15 mb-4">HOW IT WORKS</div>
+            <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-5">سه مرحله تا دسترسی امن</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            <div class="hidden md:block absolute top-[3.5rem] left-[17%] right-[17%] step-line z-0"></div>
+
+            <div class="fade-up relative z-10 text-center">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 pulse-glow shadow-2xl">
+                    <span class="text-2xl font-black text-white font-space">01</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">اتصال</h3>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">مرورگر وب (WebSocket) یا SSH Gateway — بدون نیاز به نصب نرم‌افزار</p>
+            </div>
+            <div class="fade-up relative z-10 text-center">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mb-6 pulse-glow shadow-2xl">
+                    <span class="text-2xl font-black text-white font-space">02</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">احراز هویت</h3>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">MFA، SSO (SAML/OAuth2/OIDC)، LDAP، کلید عمومی یا JIT Access</p>
+            </div>
+            <div class="fade-up relative z-10 text-center">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 pulse-glow shadow-2xl">
+                    <span class="text-2xl font-black text-white font-space">03</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">دسترسی امن</h3>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">اتصال رمزنگاری‌شده با ضبط جلسه، واترمارک و لاگ حسابرسی</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section id="stats" class="nebula-1 relative py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="fade-up neon-border rounded-3xl p-8 sm:p-14">
+            <div class="text-center mb-14">
+                <div class="inline-block tag bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 mb-4">BY THE NUMBERS</div>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white">NexGate در یک نگاه</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-y-12 gap-x-8">
+                <div class="text-center">
+                    <div class="stat-num" data-target="8">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">پروتکل</div>
+                    <div class="text-gray-700 text-xs mt-0.5">RDP / VNC / SSH / DB / K8s</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="12">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">پلاگین امنیتی</div>
+                    <div class="text-gray-700 text-xs mt-0.5">با ۱۰ هوک چرخه حیات</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="43">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">API Handler</div>
+                    <div class="text-gray-700 text-xs mt-0.5">REST + WebSocket</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="23">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">سرویس Backend</div>
+                    <div class="text-gray-700 text-xs mt-0.5">لایه منطق تجاری</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="36">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">Repository</div>
+                    <div class="text-gray-700 text-xs mt-0.5">لایه دسترسی داده</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="58">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">صفحه فرانت‌اند</div>
+                    <div class="text-gray-700 text-xs mt-0.5">React + TypeScript</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="44" data-suffix="+">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">Migration</div>
+                    <div class="text-gray-700 text-xs mt-0.5">PostgreSQL 16</div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-num" data-target="763" data-suffix="K+">0</div>
+                    <div class="text-gray-400 text-sm font-medium mt-2">خط کد</div>
+                    <div class="text-gray-700 text-xs mt-0.5">Go + React + SQL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section class="relative py-28 hex-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <div class="fade-up inline-block tag bg-orange-500/10 text-orange-400 border border-orange-500/15 mb-4">ARCHITECTURE</div>
+                <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-6 leading-tight">معماری بومی<br>و مدرن</h2>
+                <p class="fade-up text-gray-500 text-base leading-relaxed mb-10">
+                    NexGate با موتور پروتکل بومی Go (NPE) ساخته شده — تمام پروتکل‌ها به صورت بومی و بدون وابستگی خارجی پردازش می‌شوند.
+                </p>
+                <div class="space-y-5">
+                    <div class="fade-up flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/[0.08] border border-cyan-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold">موتور پروتکل بومی (NPE)</span>
+                            <p class="text-gray-600 text-sm mt-0.5">پردازش تمام پروتکل‌ها در فرآیند Go بدون سرویس خارجی</p>
+                        </div>
+                    </div>
+                    <div class="fade-up flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/[0.08] border border-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold">سیستم پلاگین قابل توسعه</span>
+                            <p class="text-gray-600 text-sm mt-0.5">۱۲ پلاگین با ۱۰ هوک چرخه حیات و پیکربندی YAML</p>
+                        </div>
+                    </div>
+                    <div class="fade-up flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-pink-500/[0.08] border border-pink-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold">شبکه‌بندی ایزوله</span>
+                            <p class="text-gray-600 text-sm mt-0.5">۴ شبکه Docker مجزا: frontend / backend / security / browser</p>
+                        </div>
+                    </div>
+                    <div class="fade-up flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-green-500/[0.08] border border-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold">استقرار انعطاف‌پذیر</span>
+                            <p class="text-gray-600 text-sm mt-0.5">Docker Compose یا Kubernetes + Helm Chart</p>
+                        </div>
+                    </div>
+                    <div class="fade-up flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-red-500/[0.08] border border-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-white font-semibold">امنیت کانتینر</span>
+                            <p class="text-gray-600 text-sm mt-0.5">Read-only / Seccomp / Capability Drop / Resource Limits</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fade-up">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-2xl -z-10 scale-95"></div>
+                    <div class="neon-border rounded-3xl overflow-hidden">
+                        <div class="bg-[#030312] p-6 sm:p-8 font-mono text-xs sm:text-sm" dir="ltr">
+                            <pre class="text-gray-500 leading-loose overflow-x-auto"><code><span class="text-cyan-400">Browser</span> ──<span class="text-gray-800">wss://</span>──&#9654; <span class="text-purple-400 font-bold">NexGate</span> &#9664;── <span class="text-orange-400">SSH :2222</span>
+              |                    |
+  +-----------+--------------------+
+  |           |                    |
+<span class="text-cyan-400">Chi Router</span>  <span class="text-green-400">NPE Engine</span>          <span class="text-orange-400">SSH Gateway</span>
+  |           |                    |
+<span class="text-gray-600">43 Handlers</span> <span class="text-gray-600">RDP/VNC/SSH/Tel</span>     <span class="text-gray-600">TUI Menu</span>
+<span class="text-gray-600">23 Services</span> <span class="text-gray-600">Connection Pool</span>     <span class="text-gray-600">DB Clients</span>
+<span class="text-gray-600">12 Plugins</span>  <span class="text-gray-600">Interceptor</span>        <span class="text-gray-600">Cmd Filter</span>
+  |           |                    |
+  +---<span class="text-red-400">ClamAV</span>--+--<span class="text-yellow-400">CDR</span>----<span class="text-green-400">Browser</span>--+
+  |           |       <span class="text-gray-700">Isolation</span>   |
+  +-----+-----+-----------+-------+
+        |                  |
+  <span class="text-yellow-400">PostgreSQL 16</span>         <span class="text-red-400">Redis 7</span>
+  <span class="text-gray-700">44+ migrations</span>        <span class="text-gray-700">cache/pub-sub</span>
+  <span class="text-gray-700">36 repositories</span>       <span class="text-gray-700">sessions</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<div class="divider max-w-5xl mx-auto"></div>
+<section id="contact" class="nebula-1 relative py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-xl mx-auto">
+            <div class="text-center mb-12">
+                <div class="fade-up inline-block tag bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 mb-4">CONTACT</div>
+                <h2 class="fade-up text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-5">تماس با ما</h2>
+                <p class="fade-up text-gray-500 text-base">درخواست دمو، مشاوره یا هرگونه سوال</p>
+            </div>
+            <form id="contact-form" action="https://formsubmit.co/contact@nexgate.ir" method="POST" class="fade-up space-y-5">
+                <input type="hidden" name="_subject" value="پیام جدید از وبسایت NexGate">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_next" value="https://nexgate.ir/#contact">
+                <input type="text" name="_honey" style="display:none">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="name" class="block text-xs font-semibold text-gray-500 mb-2 font-space tracking-wider">NAME</label>
+                        <input type="text" id="name" name="name" required class="form-input w-full px-4 py-3.5 rounded-xl text-white text-sm placeholder-gray-700" placeholder="نام و نام خانوادگی">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-xs font-semibold text-gray-500 mb-2 font-space tracking-wider">EMAIL</label>
+                        <input type="email" id="email" name="email" required class="form-input w-full px-4 py-3.5 rounded-xl text-white text-sm placeholder-gray-700" placeholder="email@company.com" dir="ltr">
+                    </div>
+                </div>
+                <div>
+                    <label for="message" class="block text-xs font-semibold text-gray-500 mb-2 font-space tracking-wider">MESSAGE</label>
+                    <textarea id="message" name="message" rows="5" required class="form-input w-full px-4 py-3.5 rounded-xl text-white text-sm placeholder-gray-700 resize-none" placeholder="پیام خود را بنویسید..."></textarea>
+                </div>
+                <button type="submit" class="cta-neon w-full px-8 py-4 rounded-xl text-base font-bold text-white shadow-2xl">
+                    <span>ارسال پیام</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-cyan-500/[0.05] py-10 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 flex items-center justify-center">
+                    <svg class="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <span class="font-extrabold text-white font-space text-sm">NEXGATE</span>
+            </div>
+            <div class="flex items-center gap-6 text-xs text-gray-600">
+                <a href="#protocols" class="hover:text-cyan-400 transition-colors">پروتکل‌ها</a>
+                <a href="#features" class="hover:text-cyan-400 transition-colors">قابلیت‌ها</a>
+                <a href="#how-it-works" class="hover:text-cyan-400 transition-colors">نحوه کار</a>
+                <a href="#contact" class="hover:text-cyan-400 transition-colors">تماس</a>
+                <a href="mailto:contact@nexgate.ir" class="hover:text-cyan-400 transition-colors font-space text-[10px]">contact@nexgate.ir</a>
+            </div>
+            <div class="text-xs text-gray-700">
+                &copy; ۱۴۰۴ NexGate — تمامی حقوق محفوظ است
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+    // ===== STAR FIELD =====
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    const STAR_COUNT = 300;
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function initStars() {
+        stars = [];
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5 + 0.3,
+                speed: Math.random() * 0.3 + 0.05,
+                opacity: Math.random() * 0.8 + 0.2,
+                pulse: Math.random() * Math.PI * 2,
+                pulseSpeed: Math.random() * 0.02 + 0.005,
+                color: ['#00f5ff', '#b14aed', '#ff6ec7', '#ffffff', '#7b61ff'][Math.floor(Math.random() * 5)]
+            });
+        }
+    }
+    initStars();
+
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            star.pulse += star.pulseSpeed;
+            const flicker = 0.5 + Math.sin(star.pulse) * 0.5;
+            const alpha = star.opacity * flicker;
+
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fillStyle = star.color;
+            ctx.globalAlpha = alpha;
+            ctx.fill();
+
+            // Glow
+            if (star.size > 1) {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = star.color;
+                ctx.globalAlpha = alpha * 0.1;
+                ctx.fill();
+            }
+
+            ctx.globalAlpha = 1;
+
+            // Slow drift
+            star.y += star.speed;
+            if (star.y > canvas.height + 5) {
+                star.y = -5;
+                star.x = Math.random() * canvas.width;
+            }
+        });
+        requestAnimationFrame(drawStars);
+    }
+    drawStars();
+
+    // Parallax on mouse move
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', e => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 15;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 15;
+        canvas.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+    });
+
+    // ===== SCROLL ANIMATIONS =====
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+    // ===== STAT COUNTERS =====
+    const statObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (!e.isIntersecting) return;
+            const el = e.target, target = +el.dataset.target, suffix = el.dataset.suffix || '';
+            let cur = 0;
+            const step = target / 100;
+            const timer = setInterval(() => {
+                cur += step;
+                if (cur >= target) { cur = target; clearInterval(timer); }
+                el.textContent = Math.floor(cur) + suffix;
+            }, 16);
+            statObs.unobserve(el);
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat-num').forEach(el => statObs.observe(el));
+
+    // ===== NAVBAR =====
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ===== MOBILE MENU =====
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => menu.classList.toggle('hidden'));
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+
+    // ===== FORM =====
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+        const n = document.getElementById('name').value.trim();
+        const em = document.getElementById('email').value.trim();
+        const m = document.getElementById('message').value.trim();
+        if (!n || !em || !m) { e.preventDefault(); alert('لطفاً تمام فیلدها را پر کنید'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { e.preventDefault(); alert('لطفاً ایمیل معتبر وارد کنید'); return; }
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = '<span>در حال ارسال...</span>';
+        btn.disabled = true;
+    });
+</script>
+</body>
+</html>
